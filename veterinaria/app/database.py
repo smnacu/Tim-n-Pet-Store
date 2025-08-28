@@ -8,7 +8,9 @@ SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
+
+# Se define el esquema que usarán los modelos de este servicio.
+Base = declarative_base(metadata={'schema': 'veterinary'})
 
 # --- Comentario sobre Multi-Tenancy ---
 # Para un futuro modelo multi-inquilino, se podría modificar la conexión
