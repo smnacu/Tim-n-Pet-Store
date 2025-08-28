@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+psycopg2-binary
+pydantic
+
+# Dependencias para tareas asíncronas (ej. procesamiento de OCR)
+# celery
+# redis
+
+# Placeholder para la librería de OCR
+# easyocr
+# pillow

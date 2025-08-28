@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  # Servicio de Autenticación
+  fastapi-auth:
+    build: ./auth
+    container_name: fastapi-auth
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - ./auth:/app
+    ports:
+      - "8001:8000"
+    environment:
+      - DATABASE_URL=postgresql://user:password@postgresql/auth_db
+    depends_on:
+      - postgresql
+
+  # Servicio de Veterinaria
+  fastapi-veterinaria:
+    build: ./veterinaria
+    container_name: fastapi-veterinaria
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - ./veterinaria:/app
+    ports:
+      - "8002:8000"
+    environment:
+      - DATABASE_URL=postgresql://user:password@postgresql/veterinaria_db
+    depends_on:
+      - postgresql
+
+  # Servicio de Peluquería
+  fastapi-peluqueria:
+    build: ./peluqueria
+    container_name: fastapi-peluqueria
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - ./peluqueria:/app
+    ports:
+      - "8003:8000"
+    environment:
+      - DATABASE_URL=postgresql://user:password@postgresql/peluqueria_db
+    depends_on:
+      - postgresql
+
+  # Servicio de Tienda (Pet Shop)
+  fastapi-petshop:
+    build: ./petshop
+    container_name: fastapi-petshop
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - ./petshop:/app
+    ports:
+      - "8004:8000"
+    environment:
+      - DATABASE_URL=postgresql://user:password@postgresql/petshop_db
+    depends_on:
+      - postgresql
+
+  # Frontend React App
+  react-app:
+    build: ./react-app
+    container_name: react-app
+    volumes:
+      - ./react-app/src:/app/src
+    ports:
+      - "3000:3000"
+    stdin_open: true
+    tty: true
+    depends_on:
+      - fastapi-auth
+      - fastapi-veterinaria
+      - fastapi-peluqueria
+      - fastapi-petshop
+
+  # Base de Datos PostgreSQL
+  postgresql:
+    image: postgres:13
+    container_name: postgresql
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=auth_db # Base de datos por defecto, las otras se crearán dinámicamente
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+
+  # Broker de Mensajes Redis
+  redis:
+    image: redis:6.2-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:
