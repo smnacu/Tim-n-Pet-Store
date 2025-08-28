@@ -3,6 +3,11 @@ from sqlalchemy.orm import relationship
 
 from .database import Base
 
+class Categoria(Base):
+    __tablename__ = "categorias"
+    id = Column(Integer, primary_key=True, index=True)
+    nombre = Column(String, unique=True, index=True, nullable=False)
+
 class Producto(Base):
     __tablename__ = "productos"
 
@@ -11,6 +16,9 @@ class Producto(Base):
     descripcion = Column(String)
     precio = Column(Float, nullable=False)
     stock = Column(Integer, default=0)
+
+    categoria_id = Column(Integer, ForeignKey("categorias.id"))
+    categoria = relationship("Categoria")
 
     proveedor_id = Column(Integer, ForeignKey("proveedores.id"))
     proveedor = relationship("Proveedor")

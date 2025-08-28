@@ -1,6 +1,19 @@
 from pydantic import BaseModel
 from typing import List, Optional
 
+# --- Esquemas para Categoria ---
+class CategoriaBase(BaseModel):
+    nombre: str
+
+class CategoriaCreate(CategoriaBase):
+    pass
+
+class Categoria(CategoriaBase):
+    id: int
+
+    class Config:
+        orm_mode = True
+
 # --- Esquemas para Proveedor ---
 class ProveedorBase(BaseModel):
     nombre: str
@@ -24,6 +37,7 @@ class ProductoBase(BaseModel):
     precio: float
     stock: int = 0
     proveedor_id: Optional[int] = None
+    categoria_id: Optional[int] = None
 
 class ProductoCreate(ProductoBase):
     pass
@@ -31,6 +45,7 @@ class ProductoCreate(ProductoBase):
 class Producto(ProductoBase):
     id: int
     proveedor: Optional[Proveedor] = None
+    categoria: Optional[Categoria] = None
 
     class Config:
         orm_mode = True

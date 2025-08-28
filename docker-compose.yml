@@ -11,7 +11,7 @@ services:
     ports:
       - "8001:8000"
     environment:
-      - DATABASE_URL=postgresql://user:password@postgresql/auth_db
+      - DATABASE_URL=postgresql://user:password@postgresql/timon_petstore?options=-csearch_path%3Dusers,public
     depends_on:
       - postgresql
 
@@ -25,7 +25,7 @@ services:
     ports:
       - "8002:8000"
     environment:
-      - DATABASE_URL=postgresql://user:password@postgresql/veterinaria_db
+      - DATABASE_URL=postgresql://user:password@postgresql/timon_petstore?options=-csearch_path%3Dveterinary,public
     depends_on:
       - postgresql
 
@@ -39,7 +39,7 @@ services:
     ports:
       - "8003:8000"
     environment:
-      - DATABASE_URL=postgresql://user:password@postgresql/peluqueria_db
+      - DATABASE_URL=postgresql://user:password@postgresql/timon_petstore?options=-csearch_path%3Dgrooming,public
     depends_on:
       - postgresql
 
@@ -53,7 +53,7 @@ services:
     ports:
       - "8004:8000"
     environment:
-      - DATABASE_URL=postgresql://user:password@postgresql/petshop_db
+      - DATABASE_URL=postgresql://user:password@postgresql/timon_petstore?options=-csearch_path%3Dpetshop,public
     depends_on:
       - postgresql
 
@@ -80,7 +80,7 @@ services:
     environment:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=auth_db # Base de datos por defecto, las otras se crearán dinámicamente
+      - POSTGRES_DB=timon_petstore # Base de datos principal
     ports:
       - "5432:5432"
     volumes:

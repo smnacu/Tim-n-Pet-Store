@@ -1,12 +1,17 @@
--- Crear bases de datos para cada microservicio
-CREATE DATABASE veterinaria_db;
-CREATE DATABASE peluqueria_db;
-CREATE DATABASE petshop_db;
--- La base de datos 'auth_db' se crea por defecto a través de las variables de entorno de Docker.
--- Conectar a cada base de datos para crear esquemas si se desea un futuro multi-inquilino.
--- Ejemplo para la base de datos de veterinaria:
-\c veterinaria_db;
--- CREATE SCHEMA tenant1;
--- CREATE SCHEMA tenant2;
--- Este es un placeholder para una futura implementación multi-inquilino.
--- La lógica para gestionar los esquemas deberá ser implementada en el microservicio correspondiente.
+-- Este script se ejecuta cuando el contenedor de PostgreSQL se inicia por primera vez.
+-- No es necesario crear la base de datos 'timon_petstore' aquí,
+-- ya que se creará a través de la variable de entorno POSTGRES_DB en docker-compose.yml.
+
+-- Crear esquemas para cada microservicio para soportar un futuro modelo multi-inquilino.
+-- Cada microservicio gestionará sus tablas dentro de su propio esquema.
+CREATE SCHEMA IF NOT EXISTS users;
+CREATE SCHEMA IF NOT EXISTS veterinary;
+CREATE SCHEMA IF NOT EXISTS grooming;
+CREATE SCHEMA IF NOT EXISTS petshop;
+
+-- Otorga privilegios al usuario 'user' sobre los nuevos esquemas.
+-- Esto es crucial para que los microservicios puedan crear y acceder a sus tablas.
+GRANT ALL PRIVILEGES ON SCHEMA users TO "user";
+GRANT ALL PRIVILEGES ON SCHEMA veterinary TO "user";
+GRANT ALL PRIVILEGES ON SCHEMA grooming TO "user";
+GRANT ALL PRIVILEGES ON SCHEMA petshop TO "user";

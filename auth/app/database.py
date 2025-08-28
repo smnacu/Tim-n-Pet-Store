@@ -13,4 +13,5 @@ engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Base para los modelos declarativos de SQLAlchemy
-Base = declarative_base()
+# Se define el esquema que usarán los modelos de este servicio.
+Base = declarative_base(metadata={'schema': 'users'})
