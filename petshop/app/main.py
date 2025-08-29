@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from . import crud, models, schemas
-from .database import SessionLocal, engine
+from common.database import SessionLocal, engine
 
 models.Base.metadata.create_all(bind=engine)
 
