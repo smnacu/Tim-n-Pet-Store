@@ -1,7 +1,7 @@
 from sqlalchemy import Boolean, Column, Integer, String, Table, ForeignKey
 from sqlalchemy.orm import relationship
 
-from .database import Base
+from common.database import Base
 
 # Tabla de asociación para la relación muchos a muchos entre Usuarios y Roles
 user_roles = Table('user_roles', Base.metadata,

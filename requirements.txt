@@ -1,7 +1,22 @@
+# Common
 fastapi
 uvicorn[standard]
 sqlalchemy
 psycopg2-binary
 pydantic[email]
+
+# Auth
 python-jose[cryptography]
 passlib[bcrypt]
+
+# Petshop
+pandas
+openpyxl
+
+# Async tasks (Celery)
+# celery
+# redis
+
+# OCR
+# easyocr
+# pillow

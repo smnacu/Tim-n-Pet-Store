@@ -3,11 +3,14 @@ version: '3.8'
 services:
   # Servicio de Autenticación
   fastapi-auth:
-    build: ./auth
+    build:
+      context: .
+      dockerfile: backend.Dockerfile
     container_name: fastapi-auth
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     volumes:
-      - ./auth:/app
+      - ./auth/app:/app/app
+      - ./common:/app/common
     ports:
       - "8001:8000"
     environment:
@@ -17,11 +20,14 @@ services:
 
   # Servicio de Veterinaria
   fastapi-veterinaria:
-    build: ./veterinaria
+    build:
+      context: .
+      dockerfile: backend.Dockerfile
     container_name: fastapi-veterinaria
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     volumes:
-      - ./veterinaria:/app
+      - ./veterinaria/app:/app/app
+      - ./common:/app/common
     ports:
       - "8002:8000"
     environment:
@@ -31,11 +37,14 @@ services:
 
   # Servicio de Peluquería
   fastapi-peluqueria:
-    build: ./peluqueria
+    build:
+      context: .
+      dockerfile: backend.Dockerfile
     container_name: fastapi-peluqueria
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     volumes:
-      - ./peluqueria:/app
+      - ./peluqueria/app:/app/app
+      - ./common:/app/common
     ports:
       - "8003:8000"
     environment:
@@ -45,11 +54,14 @@ services:
 
   # Servicio de Tienda (Pet Shop)
   fastapi-petshop:
-    build: ./petshop
+    build:
+      context: .
+      dockerfile: backend.Dockerfile
     container_name: fastapi-petshop
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     volumes:
-      - ./petshop:/app
+      - ./petshop/app:/app/app
+      - ./common:/app/common
     ports:
       - "8004:8000"
     environment:
