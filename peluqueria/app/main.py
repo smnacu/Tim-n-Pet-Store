@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -35,6 +35,47 @@ def read_turnos(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """
     turnos = crud.get_turnos(db, skip=skip, limit=limit)
     return turnos
+
+@app.get("/turnos/{turno_id}", response_model=schemas.Turno)
+def read_turno(turno_id: int, db: Session = Depends(get_db)):
+    """
+    Obtiene un turno específico por ID.
+    """
+    db_turno = crud.get_turno(db, turno_id=turno_id)
+    if db_turno is None:
+        raise HTTPException(status_code=404, detail="Turno not found")
+    return db_turno
+
+@app.post("/peluqueros/", response_model=schemas.Peluquero)
+def create_peluquero(peluquero: schemas.PeluqueroCreate, db: Session = Depends(get_db)):
+    """
+    Crea un nuevo peluquero en el sistema.
+    """
+    return crud.create_peluquero(db=db, peluquero=peluquero)
+
+@app.get("/peluqueros/", response_model=List[schemas.Peluquero])
+def read_peluqueros(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    """
+    Obtiene una lista de peluqueros disponibles.
+    """
+    return crud.get_peluqueros(db, skip=skip, limit=limit)
+
+@app.post("/servicios/", response_model=schemas.Servicio)
+def create_servicio(servicio: schemas.ServicioCreate, db: Session = Depends(get_db)):
+    """
+    Crea un nuevo servicio de peluquería.
+    """
+    db_servicio = crud.get_servicio_by_name(db, name=servicio.nombre)
+    if db_servicio:
+        raise HTTPException(status_code=400, detail="Service already exists")
+    return crud.create_servicio(db=db, servicio=servicio)
+
+@app.get("/servicios/", response_model=List[schemas.Servicio])
+def read_servicios(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    """
+    Obtiene una lista de servicios disponibles.
+    """
+    return crud.get_servicios(db, skip=skip, limit=limit)
 
 @app.get("/")
 def read_root():

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, File, UploadFile
+from fastapi import FastAPI, Depends, File, UploadFile, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -35,6 +35,57 @@ def create_producto(producto: schemas.ProductoCreate, db: Session = Depends(get_
     """
     return crud.create_producto(db=db, producto=producto)
 
+@app.get("/productos/{producto_id}", response_model=schemas.Producto)
+def read_producto(producto_id: int, db: Session = Depends(get_db)):
+    """
+    Obtiene un producto específico por ID.
+    """
+    db_producto = crud.get_producto(db, producto_id=producto_id)
+    if db_producto is None:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return db_producto
+
+@app.post("/proveedores/", response_model=schemas.Proveedor)
+def create_proveedor(proveedor: schemas.ProveedorCreate, db: Session = Depends(get_db)):
+    """
+    Crea un nuevo proveedor.
+    """
+    db_proveedor = crud.get_proveedor_by_name(db, name=proveedor.nombre)
+    if db_proveedor:
+        raise HTTPException(status_code=400, detail="Proveedor already exists")
+    return crud.create_proveedor(db=db, proveedor=proveedor)
+
+@app.get("/proveedores/", response_model=List[schemas.Proveedor])
+def read_proveedores(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    """
+    Obtiene lista de proveedores.
+    """
+    return crud.get_proveedores(db, skip=skip, limit=limit)
+
+@app.post("/categorias/", response_model=schemas.Categoria)
+def create_categoria(categoria: schemas.CategoriaCreate, db: Session = Depends(get_db)):
+    """
+    Crea una nueva categoría.
+    """
+    db_categoria = crud.get_categoria_by_name(db, name=categoria.nombre)
+    if db_categoria:
+        raise HTTPException(status_code=400, detail="Categoria already exists")
+    return crud.create_categoria(db=db, categoria=categoria)
+
+@app.get("/categorias/", response_model=List[schemas.Categoria])
+def read_categorias(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    """
+    Obtiene lista de categorías.
+    """
+    return crud.get_categorias(db, skip=skip, limit=limit)
+
+@app.get("/categorias/{categoria_id}/productos/", response_model=List[schemas.Producto])
+def read_productos_by_categoria(categoria_id: int, db: Session = Depends(get_db)):
+    """
+    Obtiene productos por categoría.
+    """
+    return crud.get_productos_by_categoria(db, categoria_id=categoria_id)
+
 @app.post("/upload-inventario/")
 async def upload_inventario(file: UploadFile = File(...)):
     """
@@ -55,12 +106,20 @@ def registrar_venta(venta: schemas.Venta, db: Session = Depends(get_db)):
     Endpoint de Punto de Venta (TPV).
     Recibe una lista de productos y cantidades, y actualiza el stock.
     """
-    # Lógica para procesar la venta y descontar el stock
-    for item in venta.items:
-        crud.update_stock_producto(db, producto_id=item.producto_id, cantidad_vendida=item.cantidad)
-
-    db.commit()
-    return {"status": "Venta registrada y stock actualizado."}
+    try:
+        # Procesar cada item de la venta
+        for item in venta.items:
+            crud.update_stock_producto(db, producto_id=item.producto_id, cantidad_vendida=item.cantidad)
+        
+        db.commit()
+        return {"status": "Venta registrada y stock actualizado exitosamente."}
+    
+    except ValueError as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 
 @app.get("/")
 def read_root():

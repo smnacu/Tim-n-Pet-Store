@@ -47,6 +47,43 @@ def read_mascota(mascota_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Mascota not found")
     return db_mascota
 
+@app.post("/mascotas/{mascota_id}/consultas/", response_model=schemas.Consulta)
+def create_consulta(mascota_id: int, consulta: schemas.ConsultaCreate, db: Session = Depends(get_db)):
+    """
+    Crea una nueva consulta para una mascota específica.
+    """
+    historial = crud.get_historial_by_mascota(db, mascota_id=mascota_id)
+    if not historial:
+        raise HTTPException(status_code=404, detail="Historial clínico not found")
+    return crud.create_consulta(db=db, consulta=consulta, historial_id=historial.id)
+
+@app.get("/mascotas/{mascota_id}/consultas/", response_model=List[schemas.Consulta])
+def read_consultas(mascota_id: int, db: Session = Depends(get_db)):
+    """
+    Obtiene todas las consultas de una mascota específica.
+    """
+    historial = crud.get_historial_by_mascota(db, mascota_id=mascota_id)
+    if not historial:
+        raise HTTPException(status_code=404, detail="Historial clínico not found")
+    return crud.get_consultas_by_historial(db, historial_id=historial.id)
+
+@app.post("/mascotas/{mascota_id}/documentos/", response_model=schemas.Documento)
+def create_documento(mascota_id: int, documento: schemas.DocumentoCreate, db: Session = Depends(get_db)):
+    """
+    Crea un nuevo documento para una mascota específica.
+    """
+    historial = crud.get_historial_by_mascota(db, mascota_id=mascota_id)
+    if not historial:
+        raise HTTPException(status_code=404, detail="Historial clínico not found")
+    return crud.create_documento(db=db, documento=documento, historial_id=historial.id)
+
+@app.get("/propietarios/{propietario_id}/mascotas/", response_model=List[schemas.Mascota])
+def read_mascotas_by_propietario(propietario_id: int, db: Session = Depends(get_db)):
+    """
+    Obtiene todas las mascotas de un propietario específico.
+    """
+    return crud.get_mascota_by_propietario(db, propietario_id=propietario_id)
+
 @app.post("/historias-clinicas/")
 def upload_documento():
     """

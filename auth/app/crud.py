@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
+from typing import List
 
 from . import models, schemas
 
@@ -32,8 +33,12 @@ def create_user(db: Session, user: schemas.UserCreate):
     hashed_password = pwd_context.hash(user.password)
     db_user = models.User(email=user.email, hashed_password=hashed_password)
 
-    # Aquí se añadiría la lógica para asignar roles
-    # Por ejemplo, buscar los roles en la DB y asignarlos al usuario.
+    # Asignar roles al usuario
+    if user.roles:
+        for role_name in user.roles:
+            role = get_role_by_name(db, role_name)
+            if role:
+                db_user.roles.append(role)
 
     db.add(db_user)
     db.commit()
@@ -45,3 +50,44 @@ def verify_password(plain_password, hashed_password):
     Verifica que la contraseña en texto plano coincida con el hash.
     """
     return pwd_context.verify(plain_password, hashed_password)
+
+def authenticate_user(db: Session, email: str, password: str):
+    """
+    Autentica un usuario verificando email y contraseña.
+    """
+    user = get_user_by_email(db, email)
+    if not user:
+        return False
+    if not verify_password(password, user.hashed_password):
+        return False
+    return user
+
+# --- CRUD para Roles ---
+
+def create_role(db: Session, role: schemas.RoleCreate):
+    """
+    Crea un nuevo rol en la base de datos.
+    """
+    db_role = models.Role(name=role.name, description=role.description)
+    db.add(db_role)
+    db.commit()
+    db.refresh(db_role)
+    return db_role
+
+def get_role(db: Session, role_id: int):
+    """
+    Obtiene un rol por su ID.
+    """
+    return db.query(models.Role).filter(models.Role.id == role_id).first()
+
+def get_role_by_name(db: Session, name: str):
+    """
+    Obtiene un rol por su nombre.
+    """
+    return db.query(models.Role).filter(models.Role.name == name).first()
+
+def get_roles(db: Session, skip: int = 0, limit: int = 100):
+    """
+    Obtiene una lista de roles.
+    """
+    return db.query(models.Role).offset(skip).limit(limit).all()
