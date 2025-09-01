@@ -1,7 +1,8 @@
-from sqlalchemy import Column, Integer, String, Date, ForeignKey, Text
+from sqlalchemy import Column, Date, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 
 from common.database import Base
+
 
 class Mascota(Base):
     __tablename__ = "mascotas"
@@ -17,7 +18,10 @@ class Mascota(Base):
     propietario_id = Column(Integer, index=True, nullable=False)
 
     # Relación uno a uno con HistorialClinico
-    historial_clinico = relationship("HistorialClinico", back_populates="mascota", uselist=False)
+    historial_clinico = relationship(
+        "HistorialClinico", back_populates="mascota", uselist=False
+    )
+
 
 class HistorialClinico(Base):
     __tablename__ = "historiales_clinicos"
@@ -32,6 +36,7 @@ class HistorialClinico(Base):
     consultas = relationship("Consulta", back_populates="historial")
     documentos = relationship("Documento", back_populates="historial")
 
+
 class Consulta(Base):
     __tablename__ = "consultas"
     id = Column(Integer, primary_key=True, index=True)
@@ -43,12 +48,13 @@ class Consulta(Base):
 
     historial = relationship("HistorialClinico", back_populates="consultas")
 
+
 class Documento(Base):
     __tablename__ = "documentos"
     id = Column(Integer, primary_key=True, index=True)
     nombre_archivo = Column(String)
-    url_archivo = Column(String) # URL a un S3 bucket o similar
-    tipo_documento = Column(String) # Ej: "Radiografía", "Análisis de Sangre"
+    url_archivo = Column(String)  # URL a un S3 bucket o similar
+    tipo_documento = Column(String)  # Ej: "Radiografía", "Análisis de Sangre"
     historial_id = Column(Integer, ForeignKey("historiales_clinicos.id"))
 
     historial = relationship("HistorialClinico", back_populates="documentos")

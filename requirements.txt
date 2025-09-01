@@ -13,6 +13,17 @@ passlib[bcrypt]
 pandas
 openpyxl
 
+# Testing
+pytest
+pytest-asyncio
+httpx
+
+# Code Quality
+black
+isort
+flake8
+mypy
+
 # Async tasks (Celery)
 # celery
 # redis

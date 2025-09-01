@@ -1,17 +1,20 @@
-from fastapi import FastAPI, Depends, File, UploadFile, HTTPException
-from sqlalchemy.orm import Session
 from typing import List
 
-from . import crud, models, schemas
+from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
+from sqlalchemy.orm import Session
+
 from common.database import SessionLocal, engine
+
+from . import crud, models, schemas
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Servicio de Tienda (Pet Shop)",
     description="Microservicio para gestionar inventario, productos, proveedores y punto de venta.",
-    version="0.1.0"
+    version="0.1.0",
 )
+
 
 def get_db():
     db = SessionLocal()
@@ -19,6 +22,7 @@ def get_db():
         yield db
     finally:
         db.close()
+
 
 @app.get("/productos/", response_model=List[schemas.Producto])
 def read_productos(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
@@ -28,12 +32,14 @@ def read_productos(skip: int = 0, limit: int = 100, db: Session = Depends(get_db
     productos = crud.get_productos(db, skip=skip, limit=limit)
     return productos
 
+
 @app.post("/productos/", response_model=schemas.Producto)
 def create_producto(producto: schemas.ProductoCreate, db: Session = Depends(get_db)):
     """
     Crea un nuevo producto en el inventario.
     """
     return crud.create_producto(db=db, producto=producto)
+
 
 @app.get("/productos/{producto_id}", response_model=schemas.Producto)
 def read_producto(producto_id: int, db: Session = Depends(get_db)):
@@ -45,6 +51,7 @@ def read_producto(producto_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Product not found")
     return db_producto
 
+
 @app.post("/proveedores/", response_model=schemas.Proveedor)
 def create_proveedor(proveedor: schemas.ProveedorCreate, db: Session = Depends(get_db)):
     """
@@ -55,12 +62,14 @@ def create_proveedor(proveedor: schemas.ProveedorCreate, db: Session = Depends(g
         raise HTTPException(status_code=400, detail="Proveedor already exists")
     return crud.create_proveedor(db=db, proveedor=proveedor)
 
+
 @app.get("/proveedores/", response_model=List[schemas.Proveedor])
 def read_proveedores(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """
     Obtiene lista de proveedores.
     """
     return crud.get_proveedores(db, skip=skip, limit=limit)
+
 
 @app.post("/categorias/", response_model=schemas.Categoria)
 def create_categoria(categoria: schemas.CategoriaCreate, db: Session = Depends(get_db)):
@@ -72,6 +81,7 @@ def create_categoria(categoria: schemas.CategoriaCreate, db: Session = Depends(g
         raise HTTPException(status_code=400, detail="Categoria already exists")
     return crud.create_categoria(db=db, categoria=categoria)
 
+
 @app.get("/categorias/", response_model=List[schemas.Categoria])
 def read_categorias(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """
@@ -79,12 +89,14 @@ def read_categorias(skip: int = 0, limit: int = 100, db: Session = Depends(get_d
     """
     return crud.get_categorias(db, skip=skip, limit=limit)
 
+
 @app.get("/categorias/{categoria_id}/productos/", response_model=List[schemas.Producto])
 def read_productos_by_categoria(categoria_id: int, db: Session = Depends(get_db)):
     """
     Obtiene productos por categoría.
     """
     return crud.get_productos_by_categoria(db, categoria_id=categoria_id)
+
 
 @app.post("/upload-inventario/")
 async def upload_inventario(file: UploadFile = File(...)):
@@ -98,7 +110,11 @@ async def upload_inventario(file: UploadFile = File(...)):
     # 1. Guardar el archivo temporalmente.
     # 2. Llamar a una tarea de Celery pasándole la ruta del archivo.
     # 3. La tarea de Celery usaría pandas para leer el Excel y actualizar la DB.
-    return {"filename": file.filename, "status": "Archivo recibido, pendiente de procesamiento."}
+    return {
+        "filename": file.filename,
+        "status": "Archivo recibido, pendiente de procesamiento.",
+    }
+
 
 @app.post("/pos/venta/")
 def registrar_venta(venta: schemas.Venta, db: Session = Depends(get_db)):
@@ -109,17 +125,22 @@ def registrar_venta(venta: schemas.Venta, db: Session = Depends(get_db)):
     try:
         # Procesar cada item de la venta
         for item in venta.items:
-            crud.update_stock_producto(db, producto_id=item.producto_id, cantidad_vendida=item.cantidad)
-        
+            crud.update_stock_producto(
+                db, producto_id=item.producto_id, cantidad_vendida=item.cantidad
+            )
+
         db.commit()
         return {"status": "Venta registrada y stock actualizado exitosamente."}
-    
+
     except ValueError as e:
         db.rollback()
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error interno del servidor: {str(e)}"
+        )
+
 
 @app.get("/")
 def read_root():

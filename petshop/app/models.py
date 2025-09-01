@@ -1,12 +1,14 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey
+from sqlalchemy import Column, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from common.database import Base
+
 
 class Categoria(Base):
     __tablename__ = "categorias"
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String, unique=True, index=True, nullable=False)
+
 
 class Producto(Base):
     __tablename__ = "productos"

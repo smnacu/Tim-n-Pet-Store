@@ -1,18 +1,23 @@
-from pydantic import BaseModel
 from typing import List, Optional
+
+from pydantic import BaseModel
+
 
 # --- Esquemas para Categoria ---
 class CategoriaBase(BaseModel):
     nombre: str
 
+
 class CategoriaCreate(CategoriaBase):
     pass
+
 
 class Categoria(CategoriaBase):
     id: int
 
     class Config:
         orm_mode = True
+
 
 # --- Esquemas para Proveedor ---
 class ProveedorBase(BaseModel):
@@ -21,14 +26,17 @@ class ProveedorBase(BaseModel):
     telefono: Optional[str] = None
     email: Optional[str] = None
 
+
 class ProveedorCreate(ProveedorBase):
     pass
+
 
 class Proveedor(ProveedorBase):
     id: int
 
     class Config:
         orm_mode = True
+
 
 # --- Esquemas para Producto ---
 class ProductoBase(BaseModel):
@@ -39,8 +47,10 @@ class ProductoBase(BaseModel):
     proveedor_id: Optional[int] = None
     categoria_id: Optional[int] = None
 
+
 class ProductoCreate(ProductoBase):
     pass
+
 
 class Producto(ProductoBase):
     id: int
@@ -50,10 +60,12 @@ class Producto(ProductoBase):
     class Config:
         orm_mode = True
 
+
 # --- Esquemas para Punto de Venta (TPV) ---
 class VentaItem(BaseModel):
     producto_id: int
     cantidad: int
+
 
 class Venta(BaseModel):
     items: List[VentaItem]

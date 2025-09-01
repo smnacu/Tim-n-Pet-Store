@@ -1,14 +1,18 @@
+from typing import Optional
+
 from fastapi import HTTPException, status
 from pydantic import BaseModel
-from typing import Optional
+
 
 class ErrorResponse(BaseModel):
     """
     Modelo estándar para respuestas de error.
     """
+
     error: str
     detail: Optional[str] = None
     status_code: int
+
 
 def validate_positive_integer(value: int, field_name: str) -> int:
     """
@@ -17,9 +21,10 @@ def validate_positive_integer(value: int, field_name: str) -> int:
     if value <= 0:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"{field_name} debe ser un número positivo"
+            detail=f"{field_name} debe ser un número positivo",
         )
     return value
+
 
 def validate_email_format(email: str) -> str:
     """
@@ -27,10 +32,10 @@ def validate_email_format(email: str) -> str:
     """
     if "@" not in email or "." not in email:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Formato de email inválido"
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Formato de email inválido"
         )
     return email.lower()
+
 
 def validate_string_not_empty(value: str, field_name: str) -> str:
     """
@@ -39,9 +44,10 @@ def validate_string_not_empty(value: str, field_name: str) -> str:
     if not value or not value.strip():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"{field_name} no puede estar vacío"
+            detail=f"{field_name} no puede estar vacío",
         )
     return value.strip()
+
 
 def handle_database_error(error: Exception) -> HTTPException:
     """
@@ -49,5 +55,5 @@ def handle_database_error(error: Exception) -> HTTPException:
     """
     return HTTPException(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        detail=f"Error de base de datos: {str(error)}"
+        detail=f"Error de base de datos: {str(error)}",
     )
