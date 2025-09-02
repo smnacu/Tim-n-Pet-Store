@@ -12,7 +12,10 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Servicio de Veterinaria",
-    description="Microservicio para gestionar historiales clínicos, consultas y documentos de mascotas.",
+    description=(
+        "Microservicio para gestionar historiales clínicos, "
+        "consultas y documentos de mascotas."
+    ),
     version="0.1.0",
 )
 
@@ -102,15 +105,99 @@ def read_mascotas_by_propietario(propietario_id: int, db: Session = Depends(get_
 
 
 @app.post("/historias-clinicas/")
-def upload_documento():
+async def upload_documento():
     """
     Endpoint para subir un documento (radiografía, análisis).
-    Aquí se podría integrar una tarea asíncrona (Celery + Redis)
-    para procesar el documento, por ejemplo, usando OCR para digitalizar
-    historiales en papel.
+    Usa Celery + Redis para procesar el documento de forma asíncrona
+    con OCR para digitalizar historiales en papel.
     """
-    # Lógica para guardar el archivo y encolar la tarea de procesamiento
-    return {"message": "Documento recibido. Implementar lógica de procesamiento OCR."}
+    try:
+        # Importar la tarea de Celery
+        from .tasks import process_medical_document
+        
+        # Simular información del archivo subido
+        file_path = "/tmp/uploaded_document.pdf"
+        document_type = "radiografia"
+        
+        # Encolar la tarea de procesamiento OCR
+        task = process_medical_document.delay(file_path, document_type)
+        
+        return {
+            "message": "Documento recibido y encolado para procesamiento OCR",
+            "task_id": task.id,
+            "status": "processing"
+        }
+    except Exception as e:
+        return {
+            "message": "Error al procesar documento",
+            "error": str(e),
+            "status": "error"
+        }
+
+
+@app.get("/historias-clinicas/task/{task_id}")
+async def get_ocr_task_status(task_id: str):
+    """
+    Obtiene el estado de una tarea de procesamiento OCR.
+    """
+    try:
+        from common.celery_app import celery_app
+        
+        # Obtener el resultado de la tarea
+        result = celery_app.AsyncResult(task_id)
+        
+        if result.ready():
+            if result.successful():
+                return {
+                    "task_id": task_id,
+                    "status": "completed",
+                    "result": result.result
+                }
+            else:
+                return {
+                    "task_id": task_id,
+                    "status": "failed",
+                    "error": str(result.result)
+                }
+        else:
+            return {
+                "task_id": task_id,
+                "status": "processing"
+            }
+    except Exception as e:
+        return {
+            "task_id": task_id,
+            "status": "error",
+            "error": str(e)
+        }
+
+
+@app.post("/mascotas/{mascota_id}/reportes/")
+async def generate_medical_report_endpoint(mascota_id: int):
+    """
+    Genera un reporte médico consolidado para una mascota.
+    """
+    try:
+        from .tasks import generate_medical_report
+        
+        # Simular IDs de consultas
+        consultation_ids = [1, 2, 3]
+        
+        # Encolar la tarea de generación de reporte
+        task = generate_medical_report.delay(mascota_id, consultation_ids)
+        
+        return {
+            "message": "Generación de reporte médico iniciada",
+            "task_id": task.id,
+            "mascota_id": mascota_id,
+            "status": "processing"
+        }
+    except Exception as e:
+        return {
+            "message": "Error al generar reporte",
+            "error": str(e),
+            "status": "error"
+        }
 
 
 @app.get("/")

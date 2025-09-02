@@ -11,7 +11,10 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Servicio de Tienda (Pet Shop)",
-    description="Microservicio para gestionar inventario, productos, proveedores y punto de venta.",
+    description=(
+        "Microservicio para gestionar inventario, productos, "
+        "proveedores y punto de venta."
+    ),
     version="0.1.0",
 )
 
@@ -101,19 +104,95 @@ def read_productos_by_categoria(categoria_id: int, db: Session = Depends(get_db)
 @app.post("/upload-inventario/")
 async def upload_inventario(file: UploadFile = File(...)):
     """
-    Endpoint para cargar y procesar un archivo (ej. Excel) para actualizar el inventario.
-    Para archivos grandes, esto debería ser una tarea asíncrona (Celery + Redis)
-    para no bloquear el servidor. El archivo se guarda y se encola una tarea
-    para su procesamiento en segundo plano.
+    Endpoint para cargar y procesar un archivo (ej. Excel) para actualizar
+    el inventario. Usa Celery + Redis para procesamiento asíncrono.
     """
-    # Placeholder para la lógica de procesamiento de archivos
-    # 1. Guardar el archivo temporalmente.
-    # 2. Llamar a una tarea de Celery pasándole la ruta del archivo.
-    # 3. La tarea de Celery usaría pandas para leer el Excel y actualizar la DB.
-    return {
-        "filename": file.filename,
-        "status": "Archivo recibido, pendiente de procesamiento.",
-    }
+    try:
+        # Importar la tarea de Celery
+        from .tasks import process_inventory_file
+        
+        # Simular guardado del archivo
+        file_path = f"/tmp/{file.filename}"
+        file_type = "excel" if file.filename.endswith(('.xlsx', '.xls')) else "csv"
+        
+        # Encolar la tarea de procesamiento
+        task = process_inventory_file.delay(file_path, file_type)
+        
+        return {
+            "filename": file.filename,
+            "task_id": task.id,
+            "status": "Archivo recibido y encolado para procesamiento",
+            "file_type": file_type
+        }
+    except Exception as e:
+        return {
+            "filename": file.filename,
+            "status": "Error al procesar archivo",
+            "error": str(e)
+        }
+
+
+@app.get("/inventario/task/{task_id}")
+async def get_inventory_task_status(task_id: str):
+    """
+    Obtiene el estado de una tarea de procesamiento de inventario.
+    """
+    try:
+        from common.celery_app import celery_app
+        
+        # Obtener el resultado de la tarea
+        result = celery_app.AsyncResult(task_id)
+        
+        if result.ready():
+            if result.successful():
+                return {
+                    "task_id": task_id,
+                    "status": "completed",
+                    "result": result.result
+                }
+            else:
+                return {
+                    "task_id": task_id,
+                    "status": "failed",
+                    "error": str(result.result)
+                }
+        else:
+            return {
+                "task_id": task_id,
+                "status": "processing"
+            }
+    except Exception as e:
+        return {
+            "task_id": task_id,
+            "status": "error",
+            "error": str(e)
+        }
+
+
+@app.post("/reportes/inventario/")
+async def generate_inventory_report_endpoint(store_id: int = 1, report_type: str = "stock_low"):
+    """
+    Genera reportes de inventario de forma asíncrona.
+    """
+    try:
+        from .tasks import generate_inventory_report
+        
+        # Encolar la tarea de generación de reporte
+        task = generate_inventory_report.delay(store_id, report_type)
+        
+        return {
+            "message": "Generación de reporte iniciada",
+            "task_id": task.id,
+            "store_id": store_id,
+            "report_type": report_type,
+            "status": "processing"
+        }
+    except Exception as e:
+        return {
+            "message": "Error al generar reporte",
+            "error": str(e),
+            "status": "error"
+        }
 
 
 @app.post("/pos/venta/")

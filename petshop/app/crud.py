@@ -37,7 +37,8 @@ def update_stock_producto(db: Session, producto_id: int, cantidad_vendida: int):
     if db_producto:
         if db_producto.stock < cantidad_vendida:
             raise ValueError(
-                f"Stock insuficiente. Stock actual: {db_producto.stock}, cantidad solicitada: {cantidad_vendida}"
+                f"Stock insuficiente. Stock actual: {db_producto.stock}, "
+                f"cantidad solicitada: {cantidad_vendida}"
             )
 
         db_producto.stock -= cantidad_vendida

@@ -4,6 +4,7 @@ uvicorn[standard]
 sqlalchemy
 psycopg2-binary
 pydantic[email]
+python-multipart
 
 # Auth
 python-jose[cryptography]
@@ -25,9 +26,11 @@ flake8
 mypy
 
 # Async tasks (Celery)
-# celery
-# redis
+celery
+redis
 
-# OCR
+# OCR (lightweight alternative to easyocr)
 # easyocr
 # pillow
+pytesseract
+pillow

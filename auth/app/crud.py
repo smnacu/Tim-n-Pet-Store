@@ -1,4 +1,3 @@
-from typing import List
 
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
