@@ -16,7 +16,7 @@ celery_app = Celery(
     include=[
         "veterinaria.app.tasks",
         "petshop.app.tasks",
-    ]
+    ],
 )
 
 # Configuración adicional

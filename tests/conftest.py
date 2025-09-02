@@ -29,7 +29,7 @@ def setup_test_db():
     """Configurar base de datos de prueba."""
     # Configurar variable de entorno para evitar errores
     os.environ["DATABASE_URL"] = TEST_SQLALCHEMY_DATABASE_URL
-    
+
     # Crear todas las tablas
     Base.metadata.create_all(bind=test_engine)
     yield
@@ -43,9 +43,9 @@ def test_db_session(setup_test_db):
     connection = test_engine.connect()
     transaction = connection.begin()
     session = TestingSessionLocal(bind=connection)
-    
+
     yield session
-    
+
     session.close()
     transaction.rollback()
     connection.close()

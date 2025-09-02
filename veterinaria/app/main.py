@@ -114,24 +114,24 @@ async def upload_documento():
     try:
         # Importar la tarea de Celery
         from .tasks import process_medical_document
-        
+
         # Simular información del archivo subido
         file_path = "/tmp/uploaded_document.pdf"
         document_type = "radiografia"
-        
+
         # Encolar la tarea de procesamiento OCR
         task = process_medical_document.delay(file_path, document_type)
-        
+
         return {
             "message": "Documento recibido y encolado para procesamiento OCR",
             "task_id": task.id,
-            "status": "processing"
+            "status": "processing",
         }
     except Exception as e:
         return {
             "message": "Error al procesar documento",
             "error": str(e),
-            "status": "error"
+            "status": "error",
         }
 
 
@@ -142,34 +142,27 @@ async def get_ocr_task_status(task_id: str):
     """
     try:
         from common.celery_app import celery_app
-        
+
         # Obtener el resultado de la tarea
         result = celery_app.AsyncResult(task_id)
-        
+
         if result.ready():
             if result.successful():
                 return {
                     "task_id": task_id,
                     "status": "completed",
-                    "result": result.result
+                    "result": result.result,
                 }
             else:
                 return {
                     "task_id": task_id,
                     "status": "failed",
-                    "error": str(result.result)
+                    "error": str(result.result),
                 }
         else:
-            return {
-                "task_id": task_id,
-                "status": "processing"
-            }
+            return {"task_id": task_id, "status": "processing"}
     except Exception as e:
-        return {
-            "task_id": task_id,
-            "status": "error",
-            "error": str(e)
-        }
+        return {"task_id": task_id, "status": "error", "error": str(e)}
 
 
 @app.post("/mascotas/{mascota_id}/reportes/")
@@ -179,24 +172,24 @@ async def generate_medical_report_endpoint(mascota_id: int):
     """
     try:
         from .tasks import generate_medical_report
-        
+
         # Simular IDs de consultas
         consultation_ids = [1, 2, 3]
-        
+
         # Encolar la tarea de generación de reporte
         task = generate_medical_report.delay(mascota_id, consultation_ids)
-        
+
         return {
             "message": "Generación de reporte médico iniciada",
             "task_id": task.id,
             "mascota_id": mascota_id,
-            "status": "processing"
+            "status": "processing",
         }
     except Exception as e:
         return {
             "message": "Error al generar reporte",
             "error": str(e),
-            "status": "error"
+            "status": "error",
         }
 
 

@@ -3,7 +3,6 @@ Tareas asíncronas para el servicio de veterinaria.
 Incluye procesamiento OCR de documentos médicos.
 """
 
-import os
 import uuid
 from typing import Dict, Any
 
@@ -11,14 +10,16 @@ from common.celery_app import celery_app
 
 
 @celery_app.task(bind=True)
-def process_medical_document(self, file_path: str, document_type: str) -> Dict[str, Any]:
+def process_medical_document(
+    self, file_path: str, document_type: str
+) -> Dict[str, Any]:
     """
     Procesa un documento médico usando OCR para extraer texto.
-    
+
     Args:
         file_path: Ruta al archivo del documento
         document_type: Tipo de documento (radiografia, analisis, historial)
-    
+
     Returns:
         Diccionario con el texto extraído y metadatos
     """
@@ -26,10 +27,10 @@ def process_medical_document(self, file_path: str, document_type: str) -> Dict[s
         # Simular procesamiento OCR (en una implementación real usaríamos easyOCR)
         # Aquí se haría el procesamiento real del documento
         task_id = self.request.id
-        
+
         # Simular extracción de texto basada en el tipo de documento
         extracted_text = _mock_ocr_processing(file_path, document_type)
-        
+
         # Generar metadatos del procesamiento
         result = {
             "task_id": task_id,
@@ -40,9 +41,9 @@ def process_medical_document(self, file_path: str, document_type: str) -> Dict[s
             "confidence": 0.95,  # Simulado
             "processing_time": 2.5,  # Simulado
         }
-        
+
         return result
-    
+
     except Exception as exc:
         # En caso de error, registrar el fallo
         self.retry(countdown=60, max_retries=3, exc=exc)
@@ -79,7 +80,7 @@ def _mock_ocr_processing(file_path: str, document_type: str) -> str:
             "Próxima cita: 2024-02-15"
         ),
     }
-    
+
     return mock_texts.get(document_type, "Texto extraído del documento.")
 
 
@@ -87,11 +88,11 @@ def _mock_ocr_processing(file_path: str, document_type: str) -> str:
 def generate_medical_report(pet_id: int, consultation_ids: list) -> Dict[str, Any]:
     """
     Genera un reporte médico consolidado para una mascota.
-    
+
     Args:
         pet_id: ID de la mascota
         consultation_ids: Lista de IDs de consultas a incluir
-    
+
     Returns:
         Diccionario con el reporte generado
     """
@@ -104,13 +105,10 @@ def generate_medical_report(pet_id: int, consultation_ids: list) -> Dict[str, An
             "generated_at": "2024-01-15T10:30:00Z",
             "summary": "Reporte médico consolidado generado exitosamente",
             "total_consultations": len(consultation_ids),
-            "status": "completed"
+            "status": "completed",
         }
-        
+
         return report
-    
+
     except Exception as exc:
-        return {
-            "error": str(exc),
-            "status": "failed"
-        }
+        return {"error": str(exc), "status": "failed"}

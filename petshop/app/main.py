@@ -110,25 +110,25 @@ async def upload_inventario(file: UploadFile = File(...)):
     try:
         # Importar la tarea de Celery
         from .tasks import process_inventory_file
-        
+
         # Simular guardado del archivo
         file_path = f"/tmp/{file.filename}"
-        file_type = "excel" if file.filename.endswith(('.xlsx', '.xls')) else "csv"
-        
+        file_type = "excel" if file.filename.endswith((".xlsx", ".xls")) else "csv"
+
         # Encolar la tarea de procesamiento
         task = process_inventory_file.delay(file_path, file_type)
-        
+
         return {
             "filename": file.filename,
             "task_id": task.id,
             "status": "Archivo recibido y encolado para procesamiento",
-            "file_type": file_type
+            "file_type": file_type,
         }
     except Exception as e:
         return {
             "filename": file.filename,
             "status": "Error al procesar archivo",
-            "error": str(e)
+            "error": str(e),
         }
 
 
@@ -139,59 +139,54 @@ async def get_inventory_task_status(task_id: str):
     """
     try:
         from common.celery_app import celery_app
-        
+
         # Obtener el resultado de la tarea
         result = celery_app.AsyncResult(task_id)
-        
+
         if result.ready():
             if result.successful():
                 return {
                     "task_id": task_id,
                     "status": "completed",
-                    "result": result.result
+                    "result": result.result,
                 }
             else:
                 return {
                     "task_id": task_id,
                     "status": "failed",
-                    "error": str(result.result)
+                    "error": str(result.result),
                 }
         else:
-            return {
-                "task_id": task_id,
-                "status": "processing"
-            }
+            return {"task_id": task_id, "status": "processing"}
     except Exception as e:
-        return {
-            "task_id": task_id,
-            "status": "error",
-            "error": str(e)
-        }
+        return {"task_id": task_id, "status": "error", "error": str(e)}
 
 
 @app.post("/reportes/inventario/")
-async def generate_inventory_report_endpoint(store_id: int = 1, report_type: str = "stock_low"):
+async def generate_inventory_report_endpoint(
+    store_id: int = 1, report_type: str = "stock_low"
+):
     """
     Genera reportes de inventario de forma asíncrona.
     """
     try:
         from .tasks import generate_inventory_report
-        
+
         # Encolar la tarea de generación de reporte
         task = generate_inventory_report.delay(store_id, report_type)
-        
+
         return {
             "message": "Generación de reporte iniciada",
             "task_id": task.id,
             "store_id": store_id,
             "report_type": report_type,
-            "status": "processing"
+            "status": "processing",
         }
     except Exception as e:
         return {
             "message": "Error al generar reporte",
             "error": str(e),
-            "status": "error"
+            "status": "error",
         }
 
 

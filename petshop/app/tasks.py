@@ -13,20 +13,20 @@ from common.celery_app import celery_app
 def process_inventory_file(self, file_path: str, file_type: str) -> Dict[str, Any]:
     """
     Procesa un archivo de inventario (Excel/CSV) para actualizar productos.
-    
+
     Args:
         file_path: Ruta al archivo del inventario
         file_type: Tipo de archivo (excel, csv)
-    
+
     Returns:
         Diccionario con el resultado del procesamiento
     """
     try:
         task_id = self.request.id
-        
+
         # Simular procesamiento del archivo
         processed_data = _mock_excel_processing(file_path, file_type)
-        
+
         result = {
             "task_id": task_id,
             "file_path": file_path,
@@ -38,9 +38,9 @@ def process_inventory_file(self, file_path: str, file_type: str) -> Dict[str, An
             "status": "completed",
             "processing_time": 5.2,  # Simulado
         }
-        
+
         return result
-    
+
     except Exception as exc:
         # En caso de error, reintentar la tarea
         self.retry(countdown=60, max_retries=3, exc=exc)
@@ -58,29 +58,29 @@ def _mock_excel_processing(file_path: str, file_type: str) -> Dict[str, Any]:
             "name": "Alimento para Perros Premium",
             "stock": 50,
             "price": 29.99,
-            "category": "Alimentos"
+            "category": "Alimentos",
         },
         {
-            "sku": "PET002", 
+            "sku": "PET002",
             "name": "Juguete Pelota",
             "stock": 25,
             "price": 8.50,
-            "category": "Juguetes"
+            "category": "Juguetes",
         },
         {
             "sku": "PET003",
             "name": "Collar Ajustable",
             "stock": 15,
             "price": 12.00,
-            "category": "Accesorios"
-        }
+            "category": "Accesorios",
+        },
     ]
-    
+
     return {
         "products": mock_products,
         "total": len(mock_products),
         "successful": len(mock_products),
-        "failed": 0
+        "failed": 0,
     }
 
 
@@ -88,77 +88,72 @@ def _mock_excel_processing(file_path: str, file_type: str) -> Dict[str, Any]:
 def update_product_prices(price_updates: List[Dict[str, Any]]) -> Dict[str, Any]:
     """
     Actualiza precios de productos en lote.
-    
+
     Args:
         price_updates: Lista de actualizaciones de precios
-    
+
     Returns:
         Diccionario con el resultado de las actualizaciones
     """
     try:
         successful_updates = []
         failed_updates = []
-        
+
         for update in price_updates:
             try:
                 # Simulación de actualización de precio
-                successful_updates.append({
-                    "sku": update["sku"],
-                    "old_price": update.get("old_price", 0),
-                    "new_price": update["new_price"],
-                    "updated_at": "2024-01-15T10:30:00Z"
-                })
+                successful_updates.append(
+                    {
+                        "sku": update["sku"],
+                        "old_price": update.get("old_price", 0),
+                        "new_price": update["new_price"],
+                        "updated_at": "2024-01-15T10:30:00Z",
+                    }
+                )
             except Exception as e:
-                failed_updates.append({
-                    "sku": update.get("sku", "unknown"),
-                    "error": str(e)
-                })
-        
+                failed_updates.append(
+                    {"sku": update.get("sku", "unknown"), "error": str(e)}
+                )
+
         return {
             "total_updates": len(price_updates),
             "successful": len(successful_updates),
             "failed": len(failed_updates),
             "successful_updates": successful_updates,
             "failed_updates": failed_updates,
-            "status": "completed"
+            "status": "completed",
         }
-    
+
     except Exception as exc:
-        return {
-            "error": str(exc),
-            "status": "failed"
-        }
+        return {"error": str(exc), "status": "failed"}
 
 
 @celery_app.task
 def generate_inventory_report(store_id: int, report_type: str) -> Dict[str, Any]:
     """
     Genera reportes de inventario.
-    
+
     Args:
         store_id: ID de la tienda
         report_type: Tipo de reporte (stock_low, sales_summary, inventory_value)
-    
+
     Returns:
         Diccionario con el reporte generado
     """
     try:
         report_data = _generate_mock_report(store_id, report_type)
-        
+
         return {
             "store_id": store_id,
             "report_type": report_type,
             "report_id": str(uuid.uuid4()),
             "generated_at": "2024-01-15T10:30:00Z",
             "data": report_data,
-            "status": "completed"
+            "status": "completed",
         }
-    
+
     except Exception as exc:
-        return {
-            "error": str(exc),
-            "status": "failed"
-        }
+        return {"error": str(exc), "status": "failed"}
 
 
 def _generate_mock_report(store_id: int, report_type: str) -> Dict[str, Any]:
@@ -166,10 +161,20 @@ def _generate_mock_report(store_id: int, report_type: str) -> Dict[str, Any]:
     if report_type == "stock_low":
         return {
             "low_stock_products": [
-                {"sku": "PET004", "name": "Shampoo Perros", "current_stock": 3, "min_stock": 10},
-                {"sku": "PET005", "name": "Arena Gatos", "current_stock": 1, "min_stock": 5}
+                {
+                    "sku": "PET004",
+                    "name": "Shampoo Perros",
+                    "current_stock": 3,
+                    "min_stock": 10,
+                },
+                {
+                    "sku": "PET005",
+                    "name": "Arena Gatos",
+                    "current_stock": 1,
+                    "min_stock": 5,
+                },
             ],
-            "total_low_stock": 2
+            "total_low_stock": 2,
         }
     elif report_type == "sales_summary":
         return {
@@ -177,8 +182,8 @@ def _generate_mock_report(store_id: int, report_type: str) -> Dict[str, Any]:
             "products_sold": 45,
             "top_products": [
                 {"sku": "PET001", "name": "Alimento Premium", "quantity_sold": 15},
-                {"sku": "PET002", "name": "Juguete Pelota", "quantity_sold": 8}
-            ]
+                {"sku": "PET002", "name": "Juguete Pelota", "quantity_sold": 8},
+            ],
         }
     elif report_type == "inventory_value":
         return {
@@ -187,8 +192,8 @@ def _generate_mock_report(store_id: int, report_type: str) -> Dict[str, Any]:
             "categories": {
                 "Alimentos": 8500.00,
                 "Juguetes": 3200.50,
-                "Accesorios": 4050.00
-            }
+                "Accesorios": 4050.00,
+            },
         }
-    
+
     return {"message": "Reporte no disponible"}
