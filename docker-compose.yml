@@ -104,5 +104,40 @@ services:
     ports:
       - "6379:6379"
 
+  # Celery Worker para tareas asíncronas
+  celery-worker:
+    build:
+      context: .
+      dockerfile: backend.Dockerfile
+    container_name: celery-worker
+    command: celery -A common.celery_app worker --loglevel=info --queues=veterinaria,petshop
+    volumes:
+      - ./veterinaria/app:/app/veterinaria/app
+      - ./petshop/app:/app/petshop/app
+      - ./common:/app/common
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=postgresql://user:password@postgresql/timon_petstore?options=-csearch_path%3Dpublic
+    depends_on:
+      - redis
+      - postgresql
+
+  # Celery Flower para monitoreo (opcional)
+  celery-flower:
+    build:
+      context: .
+      dockerfile: backend.Dockerfile
+    container_name: celery-flower
+    command: celery -A common.celery_app flower --port=5555
+    ports:
+      - "5555:5555"
+    volumes:
+      - ./common:/app/common
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+      - celery-worker
+
 volumes:
   postgres_data:

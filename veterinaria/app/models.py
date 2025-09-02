@@ -13,8 +13,9 @@ class Mascota(Base):
     sexo = Column(String)
     fecha_nacimiento = Column(Date)
 
-    # El propietario_id vincula la mascota a un usuario del servicio de autenticación.
-    # La validación de que este ID existe se haría a nivel de API Gateway o en el frontend.
+    # El propietario_id vincula la mascota a un usuario del servicio de
+    # autenticación. La validación de que este ID existe se haría a nivel
+    # de API Gateway o en el frontend.
     propietario_id = Column(Integer, index=True, nullable=False)
 
     # Relación uno a uno con HistorialClinico

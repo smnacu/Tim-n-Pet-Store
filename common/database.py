@@ -6,7 +6,8 @@ from sqlalchemy.orm import sessionmaker
 
 # Leer la URL de la base de datos desde las variables de entorno.
 # La URL debe incluir el search_path para el esquema correcto.
-# Ejemplo: postgresql://user:password@postgresql/timon_petstore?options=-csearch_path%3Dusers,public
+# Ejemplo: postgresql://user:password@postgresql/timon_petstore?
+# options=-csearch_path%3Dusers,public
 SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
 
 if SQLALCHEMY_DATABASE_URL is None:
