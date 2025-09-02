@@ -1,6 +1,8 @@
-from pydantic import BaseModel
-from typing import List, Optional
 from datetime import date
+from typing import List, Optional
+
+from pydantic import BaseModel
+
 
 # --- Esquemas para Documento ---
 class DocumentoBase(BaseModel):
@@ -8,8 +10,10 @@ class DocumentoBase(BaseModel):
     url_archivo: str
     tipo_documento: str
 
+
 class DocumentoCreate(DocumentoBase):
     pass
+
 
 class Documento(DocumentoBase):
     id: int
@@ -18,6 +22,7 @@ class Documento(DocumentoBase):
     class Config:
         orm_mode = True
 
+
 # --- Esquemas para Consulta ---
 class ConsultaBase(BaseModel):
     fecha: date
@@ -25,8 +30,10 @@ class ConsultaBase(BaseModel):
     diagnostico: str
     tratamiento: str
 
+
 class ConsultaCreate(ConsultaBase):
     pass
+
 
 class Consulta(ConsultaBase):
     id: int
@@ -35,12 +42,15 @@ class Consulta(ConsultaBase):
     class Config:
         orm_mode = True
 
+
 # --- Esquemas para Historial Clínico ---
 class HistorialClinicoBase(BaseModel):
     pass
 
+
 class HistorialClinicoCreate(HistorialClinicoBase):
     pass
+
 
 class HistorialClinico(HistorialClinicoBase):
     id: int
@@ -51,6 +61,7 @@ class HistorialClinico(HistorialClinicoBase):
     class Config:
         orm_mode = True
 
+
 # --- Esquemas para Mascota ---
 class MascotaBase(BaseModel):
     nombre: str
@@ -59,8 +70,10 @@ class MascotaBase(BaseModel):
     fecha_nacimiento: Optional[date] = None
     propietario_id: int
 
+
 class MascotaCreate(MascotaBase):
     pass
+
 
 class Mascota(MascotaBase):
     id: int

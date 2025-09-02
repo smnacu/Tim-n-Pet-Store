@@ -1,7 +1,8 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from common.database import Base
+
 
 class Turno(Base):
     __tablename__ = "turnos"
@@ -36,7 +37,9 @@ class Servicio(Base):
     __tablename__ = "servicios"
 
     id = Column(Integer, primary_key=True, index=True)
-    nombre = Column(String, unique=True, nullable=False) # Ej: "Baño y Corte", "Corte de Uñas"
+    nombre = Column(
+        String, unique=True, nullable=False
+    )  # Ej: "Baño y Corte", "Corte de Uñas"
     descripcion = Column(String)
     duracion_minutos = Column(Integer)
     precio = Column(Integer)
